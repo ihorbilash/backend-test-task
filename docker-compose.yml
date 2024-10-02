@@ -1,0 +1,55 @@
+volumes:
+  mysql:
+  redis:
+
+services:
+  node:
+    env_file: .env
+    build: docker/node
+    command: sh -c "yarn && yarn prisma:db:push && yarn dev"
+    container_name: backend-test-task
+    image: backend-test-task
+    volumes:
+      - .:/backend-test-task
+    depends_on:
+      - mysql
+    restart: on-failure  # Automatically restart if it fails
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+
+  mysql:
+    env_file: .env
+    build: docker/mysql
+    container_name: backend-test-task-mysql
+    image: backend-test-task-mysql
+    restart: always
+    # ports:           # make db visible
+    #   - 3306:3306
+    volumes:
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD_ROOT}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  phpmyadmin:
+    env_file: .env
+    build: docker/phpmyadmin
+    container_name: backend-test-task-phpmyadmin
+    image: backend-test-task-phpmyadmin
+    restart: always
+    ports:
+      - ${DB_PORT}:80
+    depends_on:
+      - mysql
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=${DB_HOST}
+      - PMA_USER=${DB_USERNAME}
+      - PMA_PASSWORD=${DB_PASSWORD}
