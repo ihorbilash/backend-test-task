@@ -12,27 +12,26 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   app.useStaticAssets(join(__dirname, '..', 'public', 'uploads'), {
-    prefix: '/uploads', 
+    prefix: '/uploads',
   });
 
   const configSwager = new DocumentBuilder()
-  .setTitle('Backend Test Task')
-  .setDescription('Backend API description')
-  .setVersion('1.0')
-  .addTag('Test Task')
-  .addBearerAuth({
-    type: 'http',
-    scheme: 'bearer',
-    bearerFormat: 'JWT'
-  },
-  'JWT-auth',
-)
-  .build();
+    .setTitle('Backend Test Task')
+    .setDescription('Backend API description')
+    .setVersion('1.0')
+    .addTag('Test Task')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'JWT-auth',
+    )
+    .build();
 
   const app_CONFIG = app.get(ConfigService);
   const app_CONFIG_PORT = app_CONFIG.get<string>('APP_PORT');
-
- 
 
   const document = SwaggerModule.createDocument(app, configSwager);
   SwaggerModule.setup('doc', app, document);

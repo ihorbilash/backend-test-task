@@ -1,9 +1,9 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { v4 as uuid } from 'uuid';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MyException } from '../exceptions/my.exception';
+// import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class UploadService {
@@ -18,6 +18,7 @@ export class UploadService {
     try {
       await fs.access(this.UPLOAD_DIR);
     } catch (err) {
+      console.log('ensureUploadDirExists->', err.message);
       await fs.mkdir(this.UPLOAD_DIR, { recursive: true });
     }
   }
@@ -37,7 +38,7 @@ export class UploadService {
   // }
 
   generateFilePublicPath(fileName: string, folderPath: string): string {
-    const publicPath = `${this.configService.get('APP_URL')}/${this.UPLOAD_FOLDER}`;
+    const publicPath = `${this.configService.get('APP_URL')}/`;
 
     const publicFolderPath = folderPath
       ? path.join(publicPath, folderPath)
@@ -64,7 +65,7 @@ export class UploadService {
     const filepath = this.generateFilePath(fileNameDir, folderPath);
     const publicPath = this.generateFilePublicPath(fileNameDir, folderPath);
     try {
-      await fs.access(folderPath)
+      await fs.access(folderPath);
       await fs.writeFile(filepath, file.buffer);
       return { originalName, filepath, publicPath };
     } catch (err) {
@@ -137,6 +138,36 @@ export class UploadService {
       throw new MyException(
         `Error update path: ${newFolderPath} Error: ${error.message}`,
       );
+    }
+  }
+
+  async deleteFolderAndFileRecursive(folderPath: string) {
+    try {
+      const items = await fs.readdir(folderPath);
+      for (const item of items) {
+        const itemPath = path.join(folderPath, item);
+        const stat = await fs.lstat(itemPath);
+
+        if (stat.isDirectory()) {
+          await this.deleteFolderAndFileRecursive(itemPath);
+        } else {
+          await fs.unlink(itemPath);
+        }
+      }
+
+      await fs.rmdir(folderPath);
+    } catch (err) {
+      throw new Error(`Failed to delete folder: ${err.message}`);
+    }
+  }
+
+  async deleteFilePath(filePath: string) {
+    try {
+      await fs.access(filePath);
+      await fs.unlink(filePath);
+      console.log(`File at path ${filePath} has been deleted.`);
+    } catch (err) {
+      throw new MyException(`Failed to delete file: ${err.message}`);
     }
   }
 }

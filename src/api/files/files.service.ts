@@ -9,6 +9,7 @@ import { FolderService } from '../folders/folder.service';
 import { PermissionService } from '../permissions/permission.service';
 import { Folder } from '@prisma/client';
 import { ISaveFile } from './interfaces/save-file.interface';
+import { FolderRepository } from '../folders/folder.repository';
 
 @Injectable()
 export class FilesService {
@@ -16,32 +17,32 @@ export class FilesService {
     private fileRepository: FilesRepository,
     private uploadService: UploadService,
     private folderService: FolderService,
+    private folderRepository: FolderRepository,
     private permissionService: PermissionService,
   ) {}
 
   async saveFile(
     userId: number,
     file: Express.Multer.File,
-    folderName: string,
+    folderId: number,
   ): Promise<ISaveFile> {
-    const folder: Folder =
-      await this.folderService.findFolderByName(folderName);
+    const folder: Folder = await this.folderRepository.getFolderById(+folderId);
     if (!folder) {
-      throw new NotFoundException(`Folder '${folderName}' not found.`);
+      throw new NotFoundException(`Folder with ID'${folderId}' not found.`);
     }
     await this.permissionService.checkPermission({
       folderId: folder.id,
       ownerId: userId,
     });
     const filename: string = file.originalname;
-    const existingFile = await this.fileRepository.findFileByNameAndFolder(
+    const existingFile = await this.fileRepository.findFileByNameAndFolderId(
       filename,
-      folderName,
+      +folderId,
     );
 
     if (existingFile) {
       throw new ForbiddenException(
-        `File '${filename}' already exists in folder '${folderName}'.`,
+        `File '${filename}' already exists in folder '${folder.name}'.`,
       );
     }
     const { originalName, filepath, publicPath } =
@@ -68,14 +69,14 @@ export class FilesService {
     };
   }
 
-  async createReadStream({ userId, fileName, folderName }) {
-    const file = await this.fileRepository.findFileByNameAndFolder(
+  async createReadStream({ userId, fileName, folderId }) {
+    const file = await this.fileRepository.findFileByNameAndFolderId(
       fileName,
-      folderName,
+      +folderId,
     );
     if (!file) {
       throw new NotFoundException(
-        `File '${fileName}' not found. In folder '${folderName}'`,
+        `File '${fileName}' not found. In folder ID '${folderId}'`,
       );
     }
 
@@ -85,5 +86,15 @@ export class FilesService {
     });
 
     return await this.uploadService.createReadStream(file.filepath);
+  }
+
+  async deleteFile(fileId: number) {
+    const file = await this.fileRepository.findFileById(+fileId);
+    if (!file) {
+      throw new NotFoundException(`File with ID ${fileId} not found.`);
+    }
+    await this.uploadService.deleteFilePath(file.filepath);
+    await this.fileRepository.deleteFile(+fileId);
+    return { message: `File ${file.filename} has been deleted.` };
   }
 }

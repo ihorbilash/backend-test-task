@@ -14,6 +14,19 @@ export class FolderService {
     private fileRepository: FilesRepository,
   ) {}
 
+  async createFolders(
+    userId: number,
+    folderName: string,
+    parentFolderId?: number,
+  ) {
+    console.log('🚀 ~ FolderService ~ parentFolderId:', parentFolderId);
+    if (parentFolderId) {
+      return await this.createSubFolder({ userId, folderName, parentFolderId });
+    } else {
+      return await this.createFolder(folderName, userId);
+    }
+  }
+
   async createFolder(folderName: string, userId: number) {
     const folder = await this.folderRepository.findFolderByName(folderName);
     if (folder) {
@@ -36,7 +49,7 @@ export class FolderService {
 
   async createSubFolder({ userId, folderName, parentFolderId }) {
     const parentFolder =
-      await this.folderRepository.getFolderById(parentFolderId);
+      await this.folderRepository.getFolderById(+parentFolderId);
     if (!parentFolder) {
       throw new NotFoundException(
         `Parent folder with ID ${parentFolderId} not found.`,
@@ -65,7 +78,7 @@ export class FolderService {
   }
 
   async editFolderName({ userId, folderId, newFolderName }) {
-    const folder = await this.folderRepository.getFolderById(folderId);
+    const folder = await this.folderRepository.getFolderById(+folderId);
     if (!folder) {
       throw new NotFoundException(`Folder with ID ${folderId} not found.`);
     }
@@ -81,14 +94,13 @@ export class FolderService {
     });
     await this.updateSubfolderPaths({
       parentFolderId: folderId,
-      oldFolderPath: folder.folderpath,
       newFolderPath,
     });
 
     return editedFolder;
   }
 
-  async updateSubfolderPaths({ parentFolderId, oldFolderPath, newFolderPath }) {
+  async updateSubfolderPaths({ parentFolderId, newFolderPath }) {
     const folder =
       await this.folderRepository.getFolderWithSubfolders(parentFolderId);
     const updateFilesPathsPromises = folder.files.map(async (file) => {
@@ -111,7 +123,6 @@ export class FolderService {
       );
       await this.updateSubfolderPaths({
         parentFolderId: subfolder.id,
-        oldFolderPath: subfolder.folderpath,
         newFolderPath: newSubfolderPath,
       });
     }
@@ -124,5 +135,27 @@ export class FolderService {
   async deleteFolder(userId: number, folderId: number) {
     await this.permissionService.checkPermission({ ownerId: userId, folderId });
     return await this.folderRepository.deleteFolder(folderId);
+  }
+
+  async deleteFolderAndContent(userId: number, folderId: number) {
+    const folder =
+      await this.folderRepository.getFolderWithSubfolders(folderId);
+    if (!folder) {
+      throw new NotFoundException(`Folder with ID ${folderId} not found.`);
+    }
+    await this.permissionService.checkPermission({ ownerId: userId, folderId });
+    await this.uploadService.deleteFolderAndFileRecursive(folder.folderpath);
+    await this.folderRepository.deleteFolder(folderId);
+    return { message: 'Folder and all its contents have been deleted.' };
+  }
+
+  async getFolderTree(folderId: number) {
+    const folderTree =
+      await this.folderRepository.getFolderWithSubfolders(folderId);
+    if (!folderTree) {
+      throw new NotFoundException(`Folder with ID ${folderId} not found.`);
+    }
+
+    return folderTree;
   }
 }

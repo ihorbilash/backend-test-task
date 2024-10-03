@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class UploadFileDto {
   @ApiProperty({
-    type: 'string',
+    type: 'number',
     description: 'In which folder the file will be uploaded',
     required: true,
   })
-  @IsString()
-  folderName: string;
+  @IsNumber()
+  folderId: number;
 
   @ApiProperty({ type: 'string', format: 'binary' })
   file: Express.Multer.File;

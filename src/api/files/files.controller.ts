@@ -10,6 +10,7 @@ import {
   Get,
   Param,
   Res,
+  Delete,
 } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -55,15 +56,15 @@ export class FilesController {
     file: Express.Multer.File,
   ) {
     const userId = req.user.userId;
-    return this.filesService.saveFile(userId, file, dto.folderName);
+    return this.filesService.saveFile(userId, file, dto.folderId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('download/:fileName/:folderName')
+  @Get('download/:fileName/:folderId')
   @ApiOperation({ summary: 'Download a file by folder name and file name' })
   async downloadFile(
     @Param('fileName') fileName: string,
-    @Param('folderName') folderName: string,
+    @Param('folderId') folderId: number,
     @Req() req,
     @Res() res,
   ) {
@@ -71,7 +72,7 @@ export class FilesController {
     const fileStream = await this.filesService.createReadStream({
       userId,
       fileName,
-      folderName,
+      folderId,
     });
     res.set({
       'Content-Type': 'application/*',
@@ -79,5 +80,13 @@ export class FilesController {
       'Content-Length': fileStream.length,
     });
     res.end(fileStream);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a file' })
+  @Delete('delete-file/:fileId')
+  async deleteFile(@Param('fileId') fileId: number) {
+    return this.filesService.deleteFile(fileId);
   }
 }

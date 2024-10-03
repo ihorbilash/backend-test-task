@@ -9,7 +9,7 @@
     "target": "esnext",
     "lib": ["esnext"],
     "sourceMap": true,
-    "outDir": "/dist",
+    "outDir": ".nest",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
