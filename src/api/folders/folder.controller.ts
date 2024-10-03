@@ -28,7 +28,7 @@ export class FoldersController {
   constructor(private folderService: FolderService) {}
 
   @ApiOperation({ summary: 'Create folder' })
-  @Post('create-folders/:folderName/:parentFolderId')
+  @Post('create/:folderName/:parentFolderId')
   @ApiParam({
     name: 'parentFolderId',
     required: false,
