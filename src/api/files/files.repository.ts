@@ -17,6 +17,12 @@ export class FilesRepository {
     });
   }
 
+  async findFileByIdAndFolderId(fileId: number, folderId: number) {
+    return this.prisma.file.findFirst({
+      where: { id: fileId, folder: { id: folderId } },
+    });
+  }
+
   async findFileByNameAndFolderId(fileName: string, folderId: number) {
     return this.prisma.file.findFirst({
       where: { filename: fileName, folder: { id: folderId } },

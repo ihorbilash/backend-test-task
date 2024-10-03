@@ -60,10 +60,10 @@ export class FilesController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('download/:fileName/:folderId')
+  @Get('download/:fileId/:folderId')
   @ApiOperation({ summary: 'Download a file by folder name and file name' })
   async downloadFile(
-    @Param('fileName') fileName: string,
+    @Param('fileId') fileId: number,
     @Param('folderId') folderId: number,
     @Req() req,
     @Res() res,
@@ -71,12 +71,12 @@ export class FilesController {
     const userId = req.user.userId;
     const fileStream = await this.filesService.createReadStream({
       userId,
-      fileName,
+      fileId,
       folderId,
     });
     res.set({
       'Content-Type': 'application/*',
-      'Content-Disposition': `attachment; filename="${fileName}"`,
+      'Content-Disposition': `attachment; fileId="${fileId}"`,
       'Content-Length': fileStream.length,
     });
     res.end(fileStream);

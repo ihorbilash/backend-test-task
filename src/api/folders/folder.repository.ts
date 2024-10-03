@@ -56,6 +56,19 @@ export class FolderRepository {
       },
     });
   }
+
+  async findFolderByNameAndParentFolderId(
+    folderName: string,
+    parentFolderId: number,
+  ) {
+    parentFolderId = parentFolderId || null;
+    return await this.prisma.folder.findFirst({
+      where: {
+        name: folderName,
+        parentFolderId,
+      },
+    });
+  }
   async getFolderById(folderId: number) {
     return await this.prisma.folder.findFirst({
       where: { id: folderId },

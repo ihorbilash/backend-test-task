@@ -69,14 +69,14 @@ export class FilesService {
     };
   }
 
-  async createReadStream({ userId, fileName, folderId }) {
-    const file = await this.fileRepository.findFileByNameAndFolderId(
-      fileName,
+  async createReadStream({ userId, fileId, folderId }) {
+    const file = await this.fileRepository.findFileByIdAndFolderId(
+      +fileId,
       +folderId,
     );
     if (!file) {
       throw new NotFoundException(
-        `File '${fileName}' not found. In folder ID '${folderId}'`,
+        `File id'${fileId}' not found. In folder ID '${folderId}'`,
       );
     }
 

@@ -56,8 +56,8 @@ Parameters:
 -file: file (required)
 -folderId: ID of the folder to upload the file to (optional)
 
-GET /api/files/download/:fileName/:folderId
-Description: Downloads a file by its name and folder ID.
+GET /api/files/download/:fileId/:folderId
+Description: Downloads a file by ID and folder ID.
 Requires authentication: Yes
 
 DELETE /api/files/delete-file/:fileId

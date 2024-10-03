@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { FolderRepository } from './folder.repository';
 import { UploadService } from '@/common/upload/upload.service';
 import { MyException } from '@/common/exceptions/my.exception';
 import { PermissionService } from '@/api/permissions/permission.service';
 import { FilesRepository } from '../files/files.repository';
+import { Folder } from '@prisma/client';
 
 @Injectable()
 export class FolderService {
@@ -55,6 +56,7 @@ export class FolderService {
         `Parent folder with ID ${parentFolderId} not found.`,
       );
     }
+    await this.checkFolderIsExist(folderName, parentFolder);
     await this.permissionService.checkPermission({
       ownerId: userId,
       folderId: parentFolder.id,
@@ -98,6 +100,19 @@ export class FolderService {
     });
 
     return editedFolder;
+  }
+
+  async checkFolderIsExist(folderName: string, parentFolder: Folder) {
+    const existingFolder =
+      await this.folderRepository.findFolderByNameAndParentFolderId(
+        folderName,
+        parentFolder.id,
+      );
+    if (existingFolder) {
+      throw new ForbiddenException(
+        `Folder '${folderName}' already exists in parentFolder where id '${parentFolder.name}'.`,
+      );
+    }
   }
 
   async updateSubfolderPaths({ parentFolderId, newFolderPath }) {
