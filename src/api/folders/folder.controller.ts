@@ -8,6 +8,7 @@ import {
   Req,
   Param,
   Get,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -17,8 +18,6 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { EditFolderNameDto } from './dto/edit-folder-name.dto';
-// import { CreateFolderDto } from './dto/create-folder.dto';
-// import { CreateSubFolderDto } from './dto/create-sub-folder.dto';
 
 @ApiTags('Folders')
 @Controller('folders')
@@ -61,7 +60,7 @@ export class FoldersController {
   }
 
   @ApiOperation({ summary: 'delete folder by id' })
-  @Post(':folderId/delete')
+  @Delete(':folderId/delete')
   async deleteFolder(@Param('folderId') folderId: number, @Req() req) {
     const userId = req.user.userId;
     return this.folderService.deleteFolderAndContent(userId, +folderId);
@@ -74,21 +73,4 @@ export class FoldersController {
   async getFolderTree(@Param('folderId') folderId: number) {
     return this.folderService.getFolderTree(+folderId);
   }
-
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
-  // @Post('create/subfolder')
-  // @ApiOperation({ summary: 'Create a folder inside an existing folder' })
-  // @ApiBody({ type: CreateSubFolderDto })
-  // async createSubFolder(@Body() dto: CreateSubFolderDto, @Req() req) {
-  //   const userId = req.user.userId;
-  //   return this.folderService.createSubFolder({ userId, ...dto });
-  // }
-
-  // @ApiOperation({ summary: 'create folder' })
-  // @Post('create')
-  // async createFolder(@Body() dto: CreateFolderDto, @Req() req) {
-  //   const userId = req.user.userId;
-  //   return this.folderService.createFolder(dto.name, userId);
-  // }
 }
