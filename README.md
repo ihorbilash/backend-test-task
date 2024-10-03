@@ -28,6 +28,10 @@ To access Swagger documentation for the API, visit:
 GET /doc
 example: http://localhost:8080/doc
 
+# phpMyAdmin
+To access phpMyAdmin for manage db, visit:
+port 3306
+example http://localhost:3306
 
 # Authentication (Google OAuth2)
 Once you receive the JWT token from this endpoint, add it to the Swagger documentation as the bearer token for authenticating other API requests.
