@@ -6,7 +6,6 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { ApiModule } from './api/api.module';
 
-
 @Module({
   imports: [
     PrismaModule,

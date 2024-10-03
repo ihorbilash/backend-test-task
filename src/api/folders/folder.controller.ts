@@ -9,10 +9,16 @@ import {
   Param,
   Get,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags,  ApiParam } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+  ApiParam,
+} from '@nestjs/swagger';
 import { EditFolderNameDto } from './dto/edit-folder-name.dto';
-import { CreateFolderDto } from './dto/create-folder.dto';
-import { CreateSubFolderDto } from './dto/create-sub-folder.dto';
+// import { CreateFolderDto } from './dto/create-folder.dto';
+// import { CreateSubFolderDto } from './dto/create-sub-folder.dto';
 
 @ApiTags('Folders')
 @Controller('folders')
@@ -21,21 +27,25 @@ import { CreateSubFolderDto } from './dto/create-sub-folder.dto';
 export class FoldersController {
   constructor(private folderService: FolderService) {}
 
-
-
   @ApiOperation({ summary: 'Create folder' })
   @Post('create-folders/:folderName/:parentFolderId')
   @ApiParam({
     name: 'parentFolderId',
-    required: false, 
-    description: 'If parentFolderId doesn`t exist, that means the folderName is the root folder.',
+    required: false,
+    description:
+      'If parentFolderId doesn`t exist, that means the folderName is the root folder.',
   })
   async createFolders(
     @Param('folderName') folderName: string,
     @Req() req,
-    @Param('parentFolderId') parentFolderId?: number) {
+    @Param('parentFolderId') parentFolderId?: number,
+  ) {
     const userId = req.user.userId;
-    return this.folderService.createFolders(userId, folderName, +parentFolderId);
+    return this.folderService.createFolders(
+      userId,
+      folderName,
+      +parentFolderId,
+    );
   }
 
   @ApiOperation({ summary: 'edit folder name by id' })
@@ -65,7 +75,7 @@ export class FoldersController {
     return this.folderService.getFolderTree(+folderId);
   }
 
-   // @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   // @ApiBearerAuth()
   // @Post('create/subfolder')
   // @ApiOperation({ summary: 'Create a folder inside an existing folder' })
@@ -75,7 +85,7 @@ export class FoldersController {
   //   return this.folderService.createSubFolder({ userId, ...dto });
   // }
 
-    // @ApiOperation({ summary: 'create folder' })
+  // @ApiOperation({ summary: 'create folder' })
   // @Post('create')
   // async createFolder(@Body() dto: CreateFolderDto, @Req() req) {
   //   const userId = req.user.userId;
