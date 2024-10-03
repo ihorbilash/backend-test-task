@@ -22,8 +22,15 @@ Start and stop the project:
 docker compose up
 docker compose down
 
-API Description (Endpoints)
-Authentication (Google OAuth2)
+# Swagger
+
+To access Swagger documentation for the API, visit:
+GET /doc
+example: http://localhost:8080/doc
+
+
+# Authentication (Google OAuth2)
+Once you receive the JWT token from this endpoint, add it to the Swagger documentation as the bearer token for authenticating other API requests.
 
 GET /api/auth/google/login
 Description: Initiates Google OAuth authorization.
@@ -32,6 +39,10 @@ Requires authentication: No
 GET /api/auth/google/redirect
 Description: Handles the redirect after successful Google OAuth authorization and returns a JWT token.
 Requires authentication: No
+
+
+
+# API Description (Endpoints)
 
 File Operations
 POST /api/files/upload
